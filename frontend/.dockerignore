@@ -1,0 +1,33 @@
+# =============================================================================
+# RepoMind Frontend — .dockerignore
+# =============================================================================
+
+# Dependencies (installed inside Docker)
+node_modules/
+
+# Build output (built at runtime or in separate stage)
+dist/
+build/
+.vite/
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-project
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment overrides
+.env
+.env.local
+.env.*.local

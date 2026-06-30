@@ -1,0 +1,30 @@
+# =============================================================================
+# RepoMind Backend — .dockerignore
+# =============================================================================
+
+# Maven build output (rebuilt inside Docker)
+target/
+
+# Cloned repos (runtime data, mounted via volume)
+clones/
+
+# IDE files
+.idea/
+*.iml
+*.iws
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+logs/
+
+# Environment overrides
+.env
+.env.*

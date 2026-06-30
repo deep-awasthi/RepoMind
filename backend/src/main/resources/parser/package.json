@@ -1,0 +1,9 @@
+{
+  "name": "repomind-ts-parser",
+  "version": "1.0.0",
+  "description": "Parser utility for extracting JS/TS AST relationships",
+  "main": "ts-parser.js",
+  "dependencies": {
+    "typescript": "^5.3.3"
+  }
+}

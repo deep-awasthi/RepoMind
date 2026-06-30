@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: repomind-postgres
+    environment:
+      POSTGRES_DB: repomind
+      POSTGRES_USER: repomind
+      POSTGRES_PASSWORD: repomindpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U repomind"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  neo4j:
+    image: neo4j:5.12-community
+    container_name: repomind-neo4j
+    ports:
+      - "7474:7474" # HTTP
+      - "7687:7687" # Bolt
+    environment:
+      - NEO4J_AUTH=neo4j/repomindpassword
+      - NEO4J_PLUGINS=["apoc"] # Optional but highly useful for advanced graph algorithms
+    volumes:
+      - neo4jdata:/data
+      - neo4jlabs:/var/lib/neo4j/labs
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p repomindpassword 'RETURN 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: repomind-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: repomind-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/repomind
+      - SPRING_DATASOURCE_USERNAME=repomind
+      - SPRING_DATASOURCE_PASSWORD=repomindpassword
+      - SPRING_NEO4J_URI=bolt://neo4j:7687
+      - SPRING_NEO4J_AUTHENTICATION_USERNAME=neo4j
+      - SPRING_NEO4J_AUTHENTICATION_PASSWORD=repomindpassword
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - REPOMIND_CLONE_DIR=/app/clones
+    depends_on:
+      postgres:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - clones_data:/app/clones
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: repomind-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  neo4jdata:
+  neo4jlabs:
+  redisdata:
+  clones_data:
